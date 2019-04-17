@@ -57,7 +57,7 @@ See: https://www.pkware.com/appnote
 
 This package does not support disk spanning.
 
-A note about ZIP64: 
+A note about ZIP64:
 
 To be backwards compatible the FileHeader has both 32 and 64 bit Size fields.
 
@@ -67,14 +67,14 @@ For files requiring the ZIP64 format the 32 bit fields will be 0xffffffff and th
 
 ## 常量
 
+Compression methods.
+
 ```
 const (
     Store   uint16 = 0 // no compression
     Deflate uint16 = 8 // DEFLATE compressed
 )
 ```
-
-Compression methods.
 
 ## 变量
 
@@ -146,27 +146,27 @@ NewWriter returns a new Writer writing a zip file to w.
 
 ## Compressor
 
-```
-type Compressor func(w io.Writer) (io.WriteCloser, error)
-```
-
 A Compressor returns a new compressing writer, writing to w.
 
 The WriteCloser's Close method must be used to flush pending data to w.
 
 The Compressor itself must be safe to invoke from multiple goroutines simultaneously, but each returned writer will be used only by one goroutine at a time.
 
-## Decompressor
+```
+type Compressor func(w io.Writer) (io.WriteCloser, error)
+```
 
-```
-type Decompressor func(r io.Reader) io.ReadCloser
-```
+## Decompressor
 
 A Decompressor returns a new decompressing reader, reading from r.
 
 The ReadCloser's Close method must be used to release associated resources.
 
 The Decompressor itself must be safe to invoke from multiple goroutines simultaneously, but each returned reader will be used only by one goroutine at a time.
+
+```
+type Decompressor func(r io.Reader) io.ReadCloser
+```
 
 ## File
 
@@ -199,6 +199,10 @@ Multiple files may be read concurrently.
 
 ## FileHeader
 
+FileHeader describes a file within a zip file.
+
+See the zip spec for details.
+
 ```
 type FileHeader struct {
     // Name is the name of the file.
@@ -215,13 +219,13 @@ type FileHeader struct {
     // By specification, the only other encoding permitted should be CP-437, but historically many ZIP readers interpret Name and Comment as whatever the system's local character encoding happens to be.
     // This flag should only be set if the user intends to encode a non-portable ZIP file for a specific localized region.
     // Otherwise, the Writer automatically sets the ZIP format's UTF-8 flag for valid UTF-8 strings.
-    NonUTF8 bool // Go 1.10
-
+    NonUTF8        bool   // Go 1.10
     CreatorVersion uint16
     ReaderVersion  uint16
     Flags          uint16
 
-    // Method is the compression method. If zero, Store is used.
+    // Method is the compression method.
+    // If zero, Store is used.
     Method uint16
 
     // Modified is the modified time of the file.
@@ -229,23 +233,18 @@ type FileHeader struct {
     // If only the MS-DOS date is present, the timezone is assumed to be UTC.
     // When writing, an extended timestamp (which is timezone-agnostic) is always emitted.
     // The legacy MS-DOS date field is encoded according to the location of the Modified time.
-    Modified     time.Time    // Go 1.10
-    ModifiedTime uint16       // Deprecated: Legacy MS-DOS date; use Modified instead.
-    ModifiedDate uint16       // Deprecated: Legacy MS-DOS time; use Modified instead.
-
+    Modified           time.Time // Go 1.10
+    ModifiedTime       uint16    // Deprecated: Legacy MS-DOS date; use Modified instead.
+    ModifiedDate       uint16    // Deprecated: Legacy MS-DOS time; use Modified instead.
     CRC32              uint32
-    CompressedSize     uint32 // Deprecated: Use CompressedSize64 instead.
-    UncompressedSize   uint32 // Deprecated: Use UncompressedSize64 instead.
-    CompressedSize64   uint64 // Go 1.1
-    UncompressedSize64 uint64 // Go 1.1
+    CompressedSize     uint32    // Deprecated: Use CompressedSize64 instead.
+    UncompressedSize   uint32    // Deprecated: Use UncompressedSize64 instead.
+    CompressedSize64   uint64    // Go 1.1
+    UncompressedSize64 uint64    // Go 1.1
     Extra              []byte
-    ExternalAttrs      uint32 // Meaning depends on CreatorVersion
+    ExternalAttrs      uint32    // Meaning depends on CreatorVersion
 }
 ```
-
-FileHeader describes a file within a zip file.
-
-See the zip spec for details.
 
 ### FileHeader.FileInfo
 
@@ -330,13 +329,13 @@ If a decompressor for a given method is not found, Reader will default to lookin
 
 ## Writer
 
+Writer implements a zip file writer.
+
 ```
 type Writer struct {
     // contains filtered or unexported fields
 }
 ```
-
-Writer implements a zip file writer.
 
 ### Writer.Create
 
@@ -419,7 +418,7 @@ func (w *Writer) SetOffset(n int64)
 ```
 
 SetOffset sets the offset of the beginning of the zip data within the underlying writer.
- 
+
 It should be used when the zip data is appended to an existing file, such as a binary executable.
 
 It must be called before any data is written.
